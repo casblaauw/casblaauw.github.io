@@ -1,0 +1,95 @@
+{
+ "groups": [
+  {
+   "group": "coelomocyte",
+   "file": "data/coelomocyte.json",
+   "n_clusters": 8,
+   "n_cells": 27501,
+   "n_display": 27501,
+   "n_genes": 122,
+   "bytes": 4728051
+  },
+  {
+   "group": "epithelium_glia",
+   "file": "data/epithelium_glia.json",
+   "n_clusters": 151,
+   "n_cells": 225058,
+   "n_display": 30247,
+   "n_genes": 795,
+   "bytes": 12027075
+  },
+  {
+   "group": "excretory",
+   "file": "data/excretory.json",
+   "n_clusters": 7,
+   "n_cells": 13975,
+   "n_display": 13975,
+   "n_genes": 124,
+   "bytes": 1515754
+  },
+  {
+   "group": "germline",
+   "file": "data/germline.json",
+   "n_clusters": 88,
+   "n_cells": 164603,
+   "n_display": 30001,
+   "n_genes": 371,
+   "bytes": 12598935
+  },
+  {
+   "group": "gland",
+   "file": "data/gland.json",
+   "n_clusters": 5,
+   "n_cells": 1802,
+   "n_display": 1802,
+   "n_genes": 93,
+   "bytes": 167556
+  },
+  {
+   "group": "intestine",
+   "file": "data/intestine.json",
+   "n_clusters": 68,
+   "n_cells": 62462,
+   "n_display": 30000,
+   "n_genes": 324,
+   "bytes": 9055576
+  },
+  {
+   "group": "muscle",
+   "file": "data/muscle.json",
+   "n_clusters": 119,
+   "n_cells": 167964,
+   "n_display": 30013,
+   "n_genes": 475,
+   "bytes": 15010559
+  },
+  {
+   "group": "neuron",
+   "file": "data/neuron.json",
+   "n_clusters": 465,
+   "n_cells": 287292,
+   "n_display": 35540,
+   "n_genes": 1485,
+   "bytes": 21841876
+  },
+  {
+   "group": "pharynx_nonneuronal",
+   "file": "data/pharynx_nonneuronal.json",
+   "n_clusters": 68,
+   "n_cells": 66981,
+   "n_display": 29998,
+   "n_genes": 404,
+   "bytes": 6897676
+  },
+  {
+   "group": "reproductive_somatic",
+   "file": "data/reproductive_somatic.json",
+   "n_clusters": 81,
+   "n_cells": 51955,
+   "n_display": 30019,
+   "n_genes": 442,
+   "bytes": 8653022
+  }
+ ],
+ "built": "2026-10-21 14:13"
+}

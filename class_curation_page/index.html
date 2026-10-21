@@ -1,0 +1,813 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Phase 5b Class Curation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky header (class picker, level steps, progress), then a workbench: two UMAPs + assign bar + markers on top, cluster dotplot below; stacks on phones. Same visual language as the Phase 5 sheet. */
+:root {
+  --bg: #f6f7f6; --panel: #ffffff; --ink: #1d2321; --muted: #5d6763; --line: #dde2df; --soft: #eef1ef;
+  --accent: #0f6b62; --accent-ink: #ffffff; --keep: #2d7d46; --drop: #b3362c; --change: #2f5fb3; --warn: #a86a00;
+  --dot-lo: #d7e3f0; --dot-hi: #0b3d75; --umap-bg: #fbfcfb; --pt-off: #d9dedb; --pt-zero: #cfd6d2;
+  --ex-lo: #f2d6a2; --ex-hi: #7a1d5c;
+  --c1: #b8641d; --c2: #6b4fb8; --c3: #1f8a5b; --c4: #b8336a; --c5: #3a6fb0; --c6: #8a7a12;
+  --c7: #1f8a8a; --c8: #c0392b; --c9: #5a5fd6; --c10: #6c8f1f; --c11: #a0522d; --c12: #8e44ad;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131716; --panel: #1b201f; --ink: #e3e8e5; --muted: #9aa49f; --line: #2d3432; --soft: #232927;
+    --accent: #4fb7a9; --accent-ink: #0b1312; --keep: #5cbf7a; --drop: #e5675c; --change: #7ea6f0; --warn: #e0a341;
+    --dot-lo: #2a3a4c; --dot-hi: #9cc8ff; --umap-bg: #161b1a; --pt-off: #2c3331; --pt-zero: #343c39;
+    --ex-lo: #5a4a2a; --ex-hi: #ffb3e6;
+    --c1: #f0a35e; --c2: #b39cf5; --c3: #5fd19c; --c4: #f07fae; --c5: #8ab6f0; --c6: #d9c95a;
+    --c7: #5fd1d1; --c8: #f08a7e; --c9: #9da1ff; --c10: #b2d65f; --c11: #e09a6e; --c12: #d39cf0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131716; --panel: #1b201f; --ink: #e3e8e5; --muted: #9aa49f; --line: #2d3432; --soft: #232927;
+  --accent: #4fb7a9; --accent-ink: #0b1312; --keep: #5cbf7a; --drop: #e5675c; --change: #7ea6f0; --warn: #e0a341;
+  --dot-lo: #2a3a4c; --dot-hi: #9cc8ff; --umap-bg: #161b1a; --pt-off: #2c3331; --pt-zero: #343c39;
+  --ex-lo: #5a4a2a; --ex-hi: #ffb3e6;
+  --c1: #f0a35e; --c2: #b39cf5; --c3: #5fd19c; --c4: #f07fae; --c5: #8ab6f0; --c6: #d9c95a;
+  --c7: #5fd1d1; --c8: #f08a7e; --c9: #9da1ff; --c10: #b2d65f; --c11: #e09a6e; --c12: #d39cf0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+header .wrap { padding-block: 10px; display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; min-width: 0; }
+h1 { font-size: 20px; margin: 0; font-weight: 700; text-wrap: balance; }
+h1 small { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 6px; }
+h2 { font-size: 15px; margin: 0; font-weight: 700; }
+.save-state { font-size: 13px; color: var(--muted); margin-left: auto; }
+.save-state.err { color: var(--drop); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 3px 11px; font: inherit; font-size: 13.5px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.chip .n { font-family: var(--font-mono); font-size: 11.5px; opacity: .8; }
+.steps { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.step { font: inherit; font-size: 14px; border: 0; border-right: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 5px 14px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+.step:last-child { border-right: 0; }
+.step b { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.step[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.step[aria-pressed="true"] b { color: inherit; opacity: .85; }
+.mini { width: 54px; height: 6px; border-radius: 3px; background: var(--soft); overflow: hidden; display: inline-block; }
+.mini span { display: block; height: 100%; background: var(--keep); }
+.step[aria-pressed="true"] .mini { background: color-mix(in oklab, var(--accent-ink) 30%, transparent); }
+.step[aria-pressed="true"] .mini span { background: var(--accent-ink); }
+select, input[type="search"], input[type="text"], textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; max-width: 100%; }
+label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.banner { background: var(--soft); border-bottom: 1px solid var(--line); font-size: 14px; }
+.banner .wrap { padding-block: 8px; }
+main.wrap { padding-block: 14px 40px; display: grid; gap: 14px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 1100px) { main.wrap { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.full { grid-column: 1 / -1; }
+.hint { font-size: 12.5px; color: var(--muted); }
+.empty { color: var(--muted); padding: 24px; text-align: center; }
+.umaps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 560px) { .umaps { grid-template-columns: 1fr; } }
+.umap { position: relative; min-width: 0; }
+.umap canvas { width: 100%; aspect-ratio: 1; max-width: 100%; display: block; background: var(--umap-bg); border: 1px solid var(--line); border-radius: 6px; touch-action: none; cursor: crosshair; }
+.umap .cap { font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; margin-bottom: 3px; }
+.umap .cap b { color: var(--ink); font-weight: 600; }
+.overlay { position: absolute; left: 8px; bottom: 8px; font-family: var(--font-mono); font-size: 12px; background: color-mix(in oklab, var(--panel) 85%, transparent); padding: 2px 6px; border-radius: 4px; pointer-events: none; }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 12.5px; box-shadow: 0 2px 8px rgb(0 0 0 / .12); max-width: 300px; }
+.tip b { font-family: var(--font-mono); }
+.legendbar { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 12.5px; max-height: 7.5em; overflow: auto; }
+.legendbar span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.exbar { display: inline-block; width: 70px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--ex-lo), var(--ex-hi)); vertical-align: middle; }
+.assign { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.assign .targets { display: flex; flex-wrap: wrap; gap: 6px; max-height: 11em; overflow: auto; }
+.tbtn { font: inherit; font-size: 13px; border: 1.5px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; padding: 2px 9px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.tbtn:hover:not(:disabled) { border-color: var(--accent); }
+.tbtn:disabled { opacity: .45; cursor: not-allowed; }
+.tbtn.stop { border-style: dashed; color: var(--muted); }
+.dbtn { font: inherit; font-weight: 600; font-size: 13px; padding: 3px 10px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.dbtn:disabled { opacity: .5; cursor: not-allowed; }
+.dbtn.drop[aria-pressed="true"] { background: var(--drop); border-color: var(--drop); color: var(--panel); }
+.sel-line { font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.sel-line b { font-family: var(--font-mono); }
+.mlist { display: flex; flex-direction: column; gap: 2px; max-height: 640px; overflow: auto; }
+.mnode { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 2px 8px; align-items: baseline; padding: 4px 2px; border-bottom: 1px solid var(--soft); }
+.mnode .nm { font-family: var(--font-mono); font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.mnode .nm small { font-weight: 400; color: var(--muted); }
+.genes { grid-column: 3; display: flex; flex-wrap: wrap; gap: 3px; }
+.gene { font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; cursor: pointer; background: var(--panel); color: var(--ink); }
+.gene:hover, .gene.on { border-color: var(--accent); background: var(--soft); }
+.gene.pin { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.gene.ab { color: var(--drop); text-decoration: line-through; text-decoration-thickness: 1px; }
+.gene .k { font-size: 10px; color: var(--muted); margin-left: 3px; }
+.gene.pin .k { color: inherit; }
+.gene.miss { opacity: .45; cursor: default; }
+details.sub { grid-column: 3; font-size: 12.5px; }
+details.sub summary { cursor: pointer; color: var(--muted); }
+details.sub .mnode { grid-template-columns: auto minmax(0, 1fr); border: 0; padding: 2px 0; }
+details.sub .mnode .genes { grid-column: 2; }
+.dot-wrap { overflow: auto; max-height: 78vh; }
+table.dot { border-collapse: separate; border-spacing: 0; font-size: 12.5px; }
+table.dot th, table.dot td { border: 0; padding: 0; }
+table.dot thead th { position: sticky; background: var(--panel); z-index: 2; }
+table.dot thead tr:first-child th { top: 0; }
+table.dot thead tr:nth-child(2) th { top: 20px; }
+table.dot th.g { width: 22px; min-width: 22px; max-width: 22px; height: 96px; vertical-align: bottom; font-family: var(--font-mono); font-size: 11.5px; font-weight: 400; color: var(--ink); cursor: pointer; }
+table.dot th.g div { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; padding: 2px 0; width: 22px; margin: 0 auto; text-align: left; }
+table.dot th.g:hover div, table.dot th.g.on div { color: var(--accent); font-weight: 600; }
+table.dot th.g.ab div { color: var(--drop); }
+table.dot th.g.de div { color: var(--muted); font-style: italic; }
+table.dot th.sep, table.dot td.sep { width: 8px; }
+table.dot th.grp { vertical-align: bottom; text-align: center; padding: 0 1px; height: 20px; }
+table.dot th.grp span { display: block; width: 0; min-width: 100%; box-sizing: border-box; border-bottom: 3px solid var(--gc); color: var(--gc); font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.dot td.c { width: 22px; min-width: 22px; max-width: 22px; height: 19px; text-align: center; vertical-align: middle; }
+table.dot td.rn, table.dot th.rn { position: sticky; left: 0; background: var(--panel); z-index: 1; padding-right: 10px; font-family: var(--font-mono); font-size: 12px; white-space: nowrap; text-align: left; }
+table.dot thead th.rn { z-index: 3; }
+table.dot td.rn small { color: var(--muted); }
+table.dot tr.cl { cursor: pointer; }
+table.dot tr.cl:hover td { background: var(--soft); }
+table.dot tr.cl.sel td { background: color-mix(in oklab, var(--accent) 16%, var(--panel)); }
+table.dot tr.gh td { padding-top: 6px; font-size: 12px; font-weight: 700; color: var(--gc); border-bottom: 2px solid var(--gc); background: var(--panel); position: sticky; left: 0; }
+table.dot tr.ref td.rn { color: var(--change); }
+table.dot tr.first td { border-top: 1px solid var(--line); }
+.lab { font-size: 11.5px; color: var(--muted); }
+.lab.seed { font-style: italic; }
+.dotc { display: inline-block; border-radius: 50%; vertical-align: middle; }
+.ctrls { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13.5px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); }
+.detail dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 12px; margin: 0; font-size: 13.5px; }
+.detail dt { color: var(--muted); }
+.detail dd { margin: 0; overflow-wrap: anywhere; }
+.dstop { border-collapse: collapse; font-size: 12.5px; }
+.dstop td { padding: 1px 10px 1px 0; vertical-align: top; }
+.dstop td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.detail dd .mono, .mono { font-family: var(--font-mono); font-size: 12.5px; }
+.detail textarea { width: 100%; min-height: 3.2em; }
+.lvl-vals { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; }
+.lvl-vals span b { font-family: var(--font-mono); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="row">
+      <h1>Phase 5b<small>label the clusters of one class, coarse to fine</small></h1>
+      <span class="save-state" id="saveState" aria-live="polite"></span>
+      <button class="dbtn" id="exportBtn" title="Download all recorded labels as JSON">Export labels</button>
+      <button class="dbtn" id="importBtn" title="Load labels from an exported JSON file; per cluster, the most recent edit wins" disabled>Import labels</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+    <div class="row"><div class="chips" id="groups" role="group" aria-label="Class"></div></div>
+    <div class="row">
+      <div class="steps" id="steps" role="group" aria-label="Level"></div>
+      <label class="check" id="scopeWrap" hidden><span id="scopeLabel">Within</span> <select id="scope"></select></label>
+    </div>
+  </div>
+</header>
+<div class="banner" id="banner" hidden><div class="wrap" id="bannerText"></div></div>
+
+<main class="wrap" id="main">
+  <section class="card" aria-label="UMAPs">
+    <div class="ctrls">
+      <label class="check">Colour <select id="colorBy">
+        <option value="label">label at this level</option><option value="cluster">cluster</option>
+        <option value="p5">Phase 5 label</option><option value="dataset">dataset</option><option value="stage">stage</option>
+      </select></label>
+      <span class="hint" id="umapHint">Click a point to pick its cluster · drag to lasso · shift adds · hover a gene to see its expression</span>
+    </div>
+    <div class="umaps">
+      <div class="umap"><div class="cap"><span><b>CONCORD</b> latent, this class only</span><span id="nShown"></span></div><canvas id="uCon" aria-label="UMAP from the CONCORD latent"></canvas><div class="overlay" id="ovCon" hidden></div></div>
+      <div class="umap"><div class="cap"><span><b>Harmony</b> on expression, this class only</span></div><canvas id="uHar" aria-label="UMAP from Harmony-integrated expression"></canvas><div class="overlay" id="ovHar" hidden></div></div>
+    </div>
+    <div class="legendbar" id="legendbar"></div>
+    <div class="assign" id="assign"></div>
+  </section>
+  <section class="card" aria-label="Markers">
+    <div class="row" style="justify-content: space-between">
+      <h2 id="mTitle">Markers</h2>
+      <span class="hint">tick = show in the dotplot · click a gene to pin it on the UMAPs</span>
+    </div>
+    <div class="mlist" id="mlist"></div>
+  </section>
+  <section class="card detail full" id="detail" hidden></section>
+  <section class="card full" aria-label="Dotplot">
+    <div class="row" style="justify-content: space-between">
+      <h2 id="dTitle">Dotplot</h2>
+      <div class="ctrls">
+        <label class="check">markers per label <select id="topk"><option>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select></label>
+        <label class="check"><input type="checkbox" id="showAbs"> absent markers</label>
+        <label class="check"><input type="checkbox" id="showSub"> sublabel markers</label>
+        <label class="check"><input type="checkbox" id="showDE"> DE of selected clusters</label>
+        <label class="check"><input type="checkbox" id="showRef" checked> reference rows</label>
+      </div>
+    </div>
+    <p class="hint" id="dNote"></p>
+    <div class="dot-wrap" id="dot"><div class="empty">Loading…</div></div>
+    <div class="legend"><span>dot size = fraction detected (0–100%)</span><span>colour = mean log expression, scaled per gene over clusters and references</span><span>rows grouped by the label at this level (italic = carried over from Phase 5)</span><span>ref = cells whose source-dataset label is that node, whole atlas</span></div>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const LV = ["broad", "cell_type", "cell_type_fine"];
+const LVN = { broad: "Broad", cell_type: "Cell type", cell_type_fine: "Fine type" };
+const PARENT = { cell_type: "broad", cell_type_fine: "cell_type" };
+const NONE = "-";
+let IDX = null, D = null, labels = {}, db = null, canWrite = false, me = null, unsub = null;
+let CL = [], byId = new Map(), GI = new Map(), MEAN = null, FRAC = null, CELLS = null, EXPR = null, exprParts = null;
+let colorOf = new Map();
+const state = { group: "", level: "broad", scope: { cell_type: "", cell_type_fine: "" }, sel: new Set(), color: "label",
+  topk: 4, showAbs: false, showSub: false, showDE: false, showRef: true, off: {}, on: {}, pin: "", hover: "" };
+try { Object.assign(state, JSON.parse(localStorage.getItem("p5b") || "{}"), { sel: new Set(), hover: "", pin: "" }); } catch (e) {}
+const persist = () => { try { localStorage.setItem("p5b", JSON.stringify({ group: state.group, level: state.level, scope: state.scope, color: state.color, topk: state.topk, showAbs: state.showAbs, showSub: state.showSub, showDE: state.showDE, showRef: state.showRef })); } catch (e) {} };
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const int = (n) => Number(n).toLocaleString("en-US");
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const docKey = (id) => "c_" + id.replace(/[^A-Za-z0-9_-]/g, "_");
+const short = (n) => n === NONE ? "none at this level" : n ? n.replace(/^(cell_type_fine|cell_type|broad|tissue):/, "") : "unassigned";
+const b64 = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new T(u.buffer); };
+function setSave(t, err) { const el = $("saveState"); el.textContent = t; el.classList.toggle("err", !!err); }
+function banner(t) { $("bannerText").textContent = t; $("banner").hidden = !t; }
+
+// ---------------- labels
+const T = () => D.tree;
+function ctBroad(ct) { const v = T().cell_type[ct]; return v ? (v.broad || NONE) : ""; }
+// effective value at a level: own doc, else the Phase 5 seed (broad / cell_type / cell_type_fine), else ""
+function eff(c, lv) {
+  const d = labels[docKey(c.id)];
+  if (d && typeof d[lv] === "string") return { v: d[lv], seed: false };
+  if (c.seed[lv]) return { v: c.seed[lv], seed: true };
+  if (lv === "broad" && c.seed.cell_type && !c.seed.broad) return { v: NONE, seed: true };
+  return { v: "", seed: false };
+}
+const val = (c, lv) => eff(c, lv).v;
+const dropped = (c) => !!labels[docKey(c.id)]?.drop;
+function hasFine(ct) { return Object.values(T().fine).some((f) => f.cell_type === ct); }
+function children(lv, parent) {
+  const t = T();
+  if (lv === "broad") return Object.keys(t.broad).filter((b) => t.broad[b].cls === D.group).sort();
+  if (lv === "cell_type") return Object.keys(t.cell_type).filter((c) => parent === NONE ? (!t.cell_type[c].broad && t.cell_type[c].cls === D.group) : t.cell_type[c].broad === parent).sort();
+  return Object.keys(t.fine).filter((f) => t.fine[f].cell_type === parent).sort();
+}
+const nodeName = (lv, n) => `${lv}:${n}`;
+function inScope(c) {
+  if (state.level === "broad") return true;
+  const p = state.scope[state.level];
+  return p !== "" && val(c, PARENT[state.level]) === p;
+}
+function scopeClusters() { return CL.filter(inScope); }
+
+// patch for assigning value v at level lv to cluster c, keeping the levels consistent
+function patchFor(c, lv, v) {
+  const p = {};
+  const cur = Object.fromEntries(LV.map((l) => [l, val(c, l)]));
+  p[lv] = v;
+  if (v && v !== NONE) {
+    if (lv === "cell_type") p.broad = ctBroad(v) || cur.broad;
+    if (lv === "cell_type_fine") { const ct = T().fine[v].cell_type; p.cell_type = ct; p.broad = ctBroad(ct) || cur.broad; }
+  }
+  const nb = p.broad ?? cur.broad, nct = p.cell_type ?? cur.cell_type, nf = p.cell_type_fine ?? cur.cell_type_fine;
+  if (nct && nct !== NONE && T().cell_type[nct] && ctBroad(nct) !== nb) p.cell_type = "";
+  const ct2 = p.cell_type ?? nct;
+  if (nf && nf !== NONE && (!ct2 || ct2 === NONE || T().fine[nf]?.cell_type !== ct2)) p.cell_type_fine = "";
+  return p;
+}
+const chains = {};
+function save(c, patch) {
+  if (!db || !canWrite) return;
+  const key = docKey(c.id), cur = labels[key] || {};
+  const body = { cluster_id: c.id, group: D.group, broad: val(c, "broad"), cell_type: val(c, "cell_type"), cell_type_fine: val(c, "cell_type_fine"),
+    note: cur.note || "", drop: !!cur.drop, p5_label: c.p5.label, ...patch, at: new Date().toISOString(), by: me || "" };
+  labels[key] = body;
+  setSave("Saving…");
+  chains[key] = (chains[key] || Promise.resolve()).then(() => db.collection("labels").doc(key).set(body))
+    .then(() => setSave("Saved")).catch(onWriteError);
+}
+function onWriteError(e) {
+  const code = e && e.code;
+  if (code === "not_granted" || code === "permission_denied") setSave("Not saved: you don't have permission to record labels", true);
+  else if (code === "resource_exhausted") setSave("Saving too fast; wait a moment and redo the last change", true);
+  else setSave("Not saved, try again", true);
+}
+function assign(v) {
+  const lv = state.level, ids = [...state.sel].filter((id) => inScope(byId.get(id)));
+  if (!ids.length || !canWrite) return;
+  for (const id of ids) { const c = byId.get(id); save(c, patchFor(c, lv, v)); }
+  renderAll();
+}
+
+// ---------------- colours
+const PAL = Array.from({ length: 12 }, (_, i) => `--c${i + 1}`);
+function hashColor(s) { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return `hsl(${h % 360} 55% 50%)`; }
+function buildColors() {
+  colorOf = new Map();
+  const cands = candidates(), pal = PAL.map(css);
+  cands.forEach((n, i) => colorOf.set(n, i < pal.length ? pal[i] : hashColor(n)));
+  colorOf.set(NONE, css("--muted")); colorOf.set("", css("--pt-zero"));
+}
+const labColor = (v) => colorOf.get(v) ?? hashColor(v);
+
+// ---------------- candidates at the current level
+function candidates() {
+  const lv = state.level;
+  if (lv === "broad") return children("broad");
+  const p = state.scope[lv];
+  return p ? children(lv, p) : [];
+}
+function scopeOptions() {
+  const lv = state.level, par = PARENT[lv], cnt = new Map();
+  for (const c of CL) { if (dropped(c)) continue; const v = val(c, par); if (v) cnt.set(v, (cnt.get(v) || 0) + 1); }
+  let opts;
+  if (lv === "cell_type") opts = [...new Set([...children("broad"), NONE, ...cnt.keys()])].filter((b) => b);
+  else opts = [...cnt.keys()].filter((v) => v !== NONE);
+  return opts.map((o) => ({ o, n: cnt.get(o) || 0, fine: lv === "cell_type_fine" ? hasFine(o) : true }))
+    .sort((a, b) => (b.fine - a.fine) || (b.n - a.n) || a.o.localeCompare(b.o));
+}
+
+// ---------------- UMAPs
+const canv = { con: $("uCon"), har: $("uHar") };
+let grid = null; // spatial index per view
+function sizeCanvas(cv) {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, w = Math.max(10, Math.round(r.width * dpr));
+  if (cv.width !== w) { cv.width = w; cv.height = w; }
+  return w;
+}
+const PAD = 0.03;
+function px(q, w) { return (PAD + q / 999 * (1 - 2 * PAD)) * w; }
+function pointColors() {
+  const n = CELLS.n, cols = new Array(n), lv = state.level;
+  const clCol = CL.map((c) => {
+    if (state.color === "cluster") return hashColor(c.id);
+    if (state.color === "p5") return c.p5.label ? hashColor(c.p5.label) : css("--pt-zero");
+    if (state.color === "label") return !inScope(c) ? null : dropped(c) ? css("--drop") : labColor(val(c, lv));
+    return null;
+  });
+  const dsCols = D.datasets.map((d) => hashColor(d)), stCols = D.stages.map((s) => hashColor("st" + s));
+  const off = css("--pt-off");
+  for (let i = 0; i < n; i++) {
+    if (state.color === "dataset") cols[i] = dsCols[CELLS.ds[i]];
+    else if (state.color === "stage") cols[i] = stCols[CELLS.st[i]];
+    else cols[i] = clCol[CELLS.cl[i]] || off;
+  }
+  return cols;
+}
+function geneValues(g) {
+  const j = GI.get(g);
+  if (j === undefined || !exprParts) return null;
+  const [part, off, nnz] = D.expr.offs[j], buf = exprParts[part];
+  if (!buf) return null;
+  const ix = new Uint16Array(buf.slice(off, off + 2 * nnz)), v = new Uint8Array(buf.slice(off + 2 * nnz, off + 3 * nnz));
+  return { ix, v, max: D.cmax[j] };
+}
+function drawUMAPs() {
+  if (!CELLS) return;
+  const gene = state.hover || state.pin, ex = gene ? geneValues(gene) : null;
+  const cols = ex ? null : pointColors();
+  const selOn = state.sel.size > 0, selCl = new Set([...state.sel].map((id) => CL.findIndex((c) => c.id === id)));
+  const lo = css("--ex-lo"), hi = css("--ex-hi"), zero = css("--pt-zero");
+  const ramp = Array.from({ length: 256 }, (_, k) => `color-mix(in oklab, ${hi} ${Math.round(k / 255 * 100)}%, ${lo})`);
+  grid = {};
+  for (const [k, cv] of Object.entries(canv)) {
+    const w = sizeCanvas(cv), ctx = cv.getContext("2d"), xy = CELLS[k], dpr = window.devicePixelRatio || 1;
+    const r = Math.max(1.2, Math.min(3, 2200 / Math.sqrt(CELLS.n) / 40)) * dpr;
+    ctx.clearRect(0, 0, w, w);
+    const G = new Map(), cs = w / 60;
+    for (let i = 0; i < CELLS.n; i++) { const gx = Math.floor(px(xy[2 * i], w) / cs), gy = Math.floor(px(xy[2 * i + 1], w) / cs), key = gx * 1000 + gy; let a = G.get(key); if (!a) G.set(key, a = []); a.push(i); }
+    grid[k] = { G, cs, w };
+    const halo = (list, d) => { ctx.fillStyle = css("--ink"); for (const i of list) ctx.fillRect(px(xy[2 * i], w) - d / 2, px(xy[2 * i + 1], w) - d / 2, d, d); };
+    const selPts = [];
+    if (selOn) for (let i = 0; i < CELLS.n; i++) if (selCl.has(CELLS.cl[i])) selPts.push(i);
+    if (ex) {
+      ctx.fillStyle = zero;
+      for (let i = 0; i < CELLS.n; i++) ctx.fillRect(px(xy[2 * i], w) - r / 2, px(xy[2 * i + 1], w) - r / 2, r, r);
+      if (selOn) halo(selPts, r * 1.4 + 2.5 * dpr);
+      const ord = Array.from(ex.ix.keys()).sort((a, b) => ex.v[a] - ex.v[b]);
+      for (const t of ord) { const i = ex.ix[t]; ctx.fillStyle = ramp[ex.v[t]]; ctx.fillRect(px(xy[2 * i], w) - r * 0.7, px(xy[2 * i + 1], w) - r * 0.7, r * 1.4, r * 1.4); }
+    } else {
+      // out-of-scope / unselected first, then the rest on top
+      const back = [], front = [];
+      for (let i = 0; i < CELLS.n; i++) {
+        const c = CL[CELLS.cl[i]], inS = inScope(c), isSel = selCl.has(CELLS.cl[i]);
+        ((!inS && state.color === "label") || (selOn && !isSel) ? back : front).push(i);
+      }
+      // with a selection: everything else grey, selected cells outlined in ink and drawn larger on top
+      const off = css("--pt-off");
+      for (const i of back) { ctx.fillStyle = selOn ? off : cols[i]; ctx.fillRect(px(xy[2 * i], w) - r / 2, px(xy[2 * i + 1], w) - r / 2, r, r); }
+      const rs = selOn ? r * 1.3 : r;
+      if (selOn) halo(selPts, rs + 2.5 * dpr);
+      for (const i of front) { ctx.fillStyle = cols[i]; ctx.fillRect(px(xy[2 * i], w) - rs / 2, px(xy[2 * i + 1], w) - rs / 2, rs, rs); }
+    }
+    // cluster-id tags at the median position of each selected cluster
+    if (selOn && selCl.size <= 15) {
+      const pos = new Map();
+      for (const i of selPts) { let a = pos.get(CELLS.cl[i]); if (!a) pos.set(CELLS.cl[i], a = [[], []]); a[0].push(px(xy[2 * i], w)); a[1].push(px(xy[2 * i + 1], w)); }
+      const med = (v) => { v.sort((a, b) => a - b); return v[v.length >> 1]; };
+      ctx.font = `600 ${11 * dpr}px ui-monospace, SFMono-Regular, Menlo, monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.lineJoin = "round"; ctx.lineWidth = 3.5 * dpr; ctx.strokeStyle = css("--panel"); ctx.fillStyle = css("--ink");
+      for (const [ci, [xs, ys]] of pos) { const x = med(xs), y = med(ys), t = CL[ci].id; ctx.strokeText(t, x, y); ctx.fillText(t, x, y); }
+    }
+    if (lasso && lasso.view === k && lasso.pts.length > 1) {
+      ctx.strokeStyle = css("--accent"); ctx.lineWidth = 1.5 * dpr; ctx.beginPath();
+      lasso.pts.forEach(([x, y], i) => i ? ctx.lineTo(x * dpr, y * dpr) : ctx.moveTo(x * dpr, y * dpr)); ctx.closePath(); ctx.stroke();
+    }
+  }
+  const ov = gene ? `${gene}${ex ? ` · ${(ex.ix.length / CELLS.n * 100).toFixed(0)}% of shown cells · max ${ex.max.toFixed(1)}` : exprParts ? " · not in the panel" : " · loading expression…"}` : "";
+  for (const id of ["ovCon", "ovHar"]) { $(id).hidden = !gene; $(id).textContent = (state.pin && !state.hover ? "📌 " : "") + ov; }
+  renderLegend(gene, ex);
+}
+function renderLegend(gene, ex) {
+  const el = $("legendbar");
+  if (gene) { el.innerHTML = `<span><span class="exbar"></span> log expression of <b class="mono">${esc(gene)}</b>, low → high (grey = not detected)</span>`; return; }
+  if (state.color === "label") {
+    const cnt = new Map(); for (const c of scopeClusters()) { const v = dropped(c) ? "dropped" : val(c, state.level); cnt.set(v, (cnt.get(v) || 0) + 1); }
+    el.innerHTML = [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([v, n]) => `<span><i class="sw" style="background:${v === "dropped" ? css("--drop") : labColor(v)}"></i>${esc(v === "dropped" ? "dropped" : short(v))} <span class="hint">${n}</span></span>`).join("")
+      + (state.level !== "broad" ? `<span><i class="sw" style="background:var(--pt-off)"></i><span class="hint">outside this scope</span></span>` : "");
+  } else if (state.color === "dataset") el.innerHTML = D.datasets.map((d) => `<span><i class="sw" style="background:${hashColor(d)}"></i>${esc(d)}</span>`).join("");
+  else if (state.color === "stage") el.innerHTML = D.stages.map((s) => `<span><i class="sw" style="background:${hashColor("st" + s)}"></i>${esc(s)}</span>`).join("");
+  else el.innerHTML = `<span class="hint">${state.color === "cluster" ? "one colour per cluster; hover for its id" : "one colour per Phase 5 label; hover for the label"}</span>`;
+}
+function nearest(view, x, y) {
+  const g = grid?.[view]; if (!g) return -1;
+  const dpr = window.devicePixelRatio || 1, X = x * dpr, Y = y * dpr, gx = Math.floor(X / g.cs), gy = Math.floor(Y / g.cs), xy = CELLS[view];
+  let best = -1, bd = (8 * dpr) ** 2;
+  for (let a = gx - 1; a <= gx + 1; a++) for (let b = gy - 1; b <= gy + 1; b++) for (const i of g.G.get(a * 1000 + b) || []) {
+    const d = (px(xy[2 * i], g.w) - X) ** 2 + (px(xy[2 * i + 1], g.w) - Y) ** 2; if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+let lasso = null;
+function inPoly(x, y, P) { let ins = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ins = !ins; } return ins; }
+for (const [view, cv] of Object.entries(canv)) {
+  const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener("pointerdown", (e) => { if (!CELLS) return; cv.setPointerCapture(e.pointerId); lasso = { view, pts: [pos(e)], shift: e.shiftKey }; });
+  cv.addEventListener("pointermove", (e) => {
+    if (!CELLS) return;
+    const [x, y] = pos(e);
+    if (lasso && lasso.view === view) { lasso.pts.push([x, y]); if (lasso.pts.length % 3 === 0) drawUMAPs(); $("tip").hidden = true; return; }
+    const i = nearest(view, x, y), tip = $("tip");
+    if (i < 0) { tip.hidden = true; return; }
+    const c = CL[CELLS.cl[i]];
+    tip.innerHTML = `<b>${esc(c.id)}</b> · ${int(c.n)} cells<br>${LV.map((l) => `${LVN[l]}: ${esc(short(val(c, l)))}`).join("<br>")}<br><span class="hint">Phase 5: ${esc(short(c.p5.label))} · ${esc(D.datasets[CELLS.ds[i]])}</span>`;
+    tip.style.left = Math.min(innerWidth - 310, e.clientX + 14) + "px"; tip.style.top = (e.clientY + 14) + "px"; tip.hidden = false;
+  });
+  cv.addEventListener("pointerleave", () => { $("tip").hidden = true; });
+  cv.addEventListener("pointerup", (e) => {
+    if (!lasso) return;
+    const L = lasso; lasso = null;
+    const xs = L.pts.map((p) => p[0]), ys = L.pts.map((p) => p[1]);
+    const ext = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+    let pick = new Set();
+    if (ext < 5) { const i = nearest(view, L.pts[0][0], L.pts[0][1]); if (i >= 0) pick.add(CL[CELLS.cl[i]].id); }
+    else {
+      const g = grid[view], dpr = window.devicePixelRatio || 1, xy = CELLS[view], inside = new Map(), tot = new Map();
+      for (let i = 0; i < CELLS.n; i++) {
+        const k = CELLS.cl[i]; tot.set(k, (tot.get(k) || 0) + 1);
+        if (inPoly(px(xy[2 * i], g.w) / dpr, px(xy[2 * i + 1], g.w) / dpr, L.pts)) inside.set(k, (inside.get(k) || 0) + 1);
+      }
+      for (const [k, n] of inside) if (n / tot.get(k) >= 0.5) pick.add(CL[k].id);
+    }
+    pick = new Set([...pick].filter((id) => inScope(byId.get(id))));
+    if (L.shift) { const allIn = [...pick].every((id) => state.sel.has(id)); for (const id of pick) allIn && ext < 5 ? state.sel.delete(id) : state.sel.add(id); }
+    else state.sel = pick;
+    renderAll();
+  });
+}
+
+// ---------------- assign bar & detail
+function renderAssign() {
+  const lv = state.level, sel = [...state.sel].map((id) => byId.get(id)), n = sel.reduce((a, c) => a + c.n, 0);
+  const cands = candidates(), dis = !canWrite || !sel.length ? "disabled" : "";
+  const cur = new Map(); for (const c of sel) { const v = val(c, lv); cur.set(v, (cur.get(v) || 0) + 1); }
+  const scopeTxt = lv === "broad" ? "" : state.scope[lv] ? ` within <b>${esc(short(state.scope[lv]))}</b>` : "";
+  const targets = cands.length ? cands.map((x) => `<button class="tbtn" data-v="${esc(x)}" ${dis} title="${esc(LVN[lv])}: ${esc(x)}${T()[lv === "cell_type_fine" ? "fine" : lv][x]?.n ? ` (${T()[lv === "cell_type_fine" ? "fine" : lv][x].n} reference cells)` : ""}"><i class="sw" style="background:${labColor(x)}"></i>${esc(x)}${cur.get(x) ? ` <span class="hint">${cur.get(x)}</span>` : ""}</button>`).join("")
+    : `<span class="hint">${lv === "broad" ? "No broad labels in this class." : "Pick a scope above."}</span>`;
+  $("assign").innerHTML = `
+    <div class="sel-line">${sel.length ? `<span><b>${sel.length}</b> cluster${sel.length > 1 ? "s" : ""} selected · ${int(n)} cells${scopeTxt}</span>
+      <span class="hint">now: ${[...cur.entries()].map(([v, k]) => `${esc(short(v))} (${k})`).join(", ")}</span>
+      <button class="dbtn" id="clearSel">Clear selection</button>` : `<span class="hint">Select clusters on a UMAP or in the dotplot, then pick their ${esc(LVN[lv].toLowerCase())}.</span>`}
+      <button class="dbtn" id="selAll" ${CL.some(inScope) ? "" : "disabled"}>Select all in scope</button>
+      <button class="dbtn" id="selOpen">Select unassigned</button></div>
+    <div class="targets">${targets}
+      <button class="tbtn stop" data-v="${NONE}" ${dis} title="These clusters get no ${esc(LVN[lv].toLowerCase())}">no ${esc(LVN[lv].toLowerCase())}</button>
+      <button class="tbtn stop" data-v="" ${dis} title="Clear this level">clear</button></div>
+    <div class="sel-line"><label class="check">Other label <input type="text" id="other" list="allNodes" placeholder="any broad, cell type or fine type" ${dis} style="width:18em"></label>
+      <button class="dbtn" id="otherGo" ${dis}>Assign</button><span class="hint">for a label outside these candidates (also other classes)</span></div>`;
+  $("assign").querySelectorAll(".tbtn").forEach((b) => b.onclick = () => assign(b.dataset.v));
+  $("clearSel") && ($("clearSel").onclick = () => { state.sel.clear(); renderAll(); });
+  $("selAll").onclick = () => { state.sel = new Set(scopeClusters().filter((c) => !dropped(c)).map((c) => c.id)); renderAll(); };
+  $("selOpen").onclick = () => { state.sel = new Set(scopeClusters().filter((c) => !dropped(c) && !val(c, lv)).map((c) => c.id)); renderAll(); };
+  $("otherGo").onclick = () => {
+    const raw = $("other").value.trim(), m = raw.match(/^(broad|cell_type|cell_type_fine):(.+)$/);
+    if (!m) { setSave("Pick a label from the list (level:name)", true); return; }
+    const [, l, name] = m, ids = [...state.sel];
+    for (const id of ids) { const c = byId.get(id); save(c, patchFor(c, l, name)); }
+    renderAll();
+  };
+}
+function renderDetail() {
+  const el = $("detail");
+  if (state.sel.size !== 1) { el.hidden = true; return; }
+  const c = byId.get([...state.sel][0]), d = labels[docKey(c.id)] || {};
+  el.hidden = false;
+  const ds = Object.entries(c.datasets).sort((a, b) => b[1] - a[1]);
+  el.innerHTML = `<div class="row" style="justify-content:space-between"><h2 class="mono">${esc(c.id)} · ${int(c.n)} cells</h2>
+      <button class="dbtn drop" id="dropBtn" aria-pressed="${!!d.drop}" ${canWrite ? "" : "disabled"}>${d.drop ? "Dropped" : "Drop cluster"}</button></div>
+    <div class="lvl-vals">${LV.map((l) => { const e = eff(c, l); return `<span>${LVN[l]}: <b>${esc(short(e.v))}</b>${e.seed ? ' <span class="hint">(from Phase 5)</span>' : ""}</span>`; }).join("")}</div>
+    <dl>
+      <dt>Phase 5</dt><dd><span class="mono">${esc(c.p5.label || c.p5.decision || "—")}</span> <span class="hint">${esc(c.p5.source)}${c.p5.confidence ? ` · ${esc(c.p5.confidence)}` : ""}</span>${c.p5.note ? `<br>${esc(c.p5.note)}` : ""}</dd>
+      <dt>Phase 4</dt><dd><span class="mono">${esc(c.p4_class)}</span> · ${esc(c.status)}${c.call ? ` · draft <span class="mono">${esc(c.call)}</span>` : ""}${c.marker_top ? ` · marker top <span class="mono">${esc(c.marker_top)}</span>` : ""}</dd>
+      <dt>Phase 3</dt><dd class="mono">${esc(c.p3_top || "—")}</dd>
+      <dt>Datasets</dt><dd><table class="dstop"><tbody>${ds.map(([k, n]) => {
+        const t = (c.ds_top || {})[k];
+        const pct = t ? ` <span class="hint">${Math.round(100 * t[1] / Math.max(t[2], 1))}%</span>` : "";
+        const lab = t && t[0] ? `<span class="mono">${esc(t[0])}</span>${pct}` : `<span class="hint">no label</span>${pct}`;
+        return `<tr><td>${esc(k)}</td><td class="num hint">${int(n)}</td><td>${lab}</td></tr>`;
+      }).join("")}</tbody></table></dd>
+      <dt>Top DE</dt><dd><div class="genes" style="grid-column:auto">${c.de.map((g) => geneChip(g)).join("") || '<span class="hint">none</span>'}</div></dd>
+    </dl>
+    <label class="hint" for="note">Note (saved when you leave the field)</label>
+    <textarea id="note" ${canWrite ? "" : "disabled"}>${esc(d.note || "")}</textarea>`;
+  $("dropBtn").onclick = () => { save(c, { drop: !d.drop }); renderAll(); };
+  $("note").onchange = (e) => save(c, { note: e.target.value });
+  bindGenes(el);
+}
+
+// ---------------- markers panel
+function geneChip(g, cls = "", k = "") {
+  const ok = GI.has(g);
+  return `<span class="gene ${cls} ${ok ? "" : "miss"} ${state.pin === g ? "pin" : ""}" data-g="${ok ? esc(g) : ""}" title="${ok ? "hover: expression on the UMAPs · click: pin" : "not in this class's gene panel"}">${esc(g)}${k ? `<span class="k">${k}</span>` : ""}</span>`;
+}
+const KTAG = { custom: "R", curated: "C", curated_low: "c", deg: "d" };
+function markerGenes(node, sub) {
+  const m = D.markers[node];
+  if (!m) return `<span class="hint">no markers</span>`;
+  return m.p.slice(0, sub ? 4 : 8).map(([g, k]) => geneChip(g, "", KTAG[k] || "")).join("") + (sub ? "" : m.a.map(([g, k]) => geneChip(g, "ab", KTAG[k] || "")).join(""));
+}
+function isOn(node, i) { const k = state.level + "|" + node; if (k in state.on) return state.on[k]; return defaultOn(node, i); }
+let defaultSet = new Set();
+function computeDefaults() {
+  const lv = state.level, cnt = new Map();
+  for (const c of scopeClusters()) { const v = val(c, lv); if (v && v !== NONE) cnt.set(v, (cnt.get(v) || 0) + 1); }
+  const cands = candidates();
+  let on = cands.filter((x) => cnt.has(x)).sort((a, b) => cnt.get(b) - cnt.get(a));
+  if (on.length < 3) on = cands;
+  defaultSet = new Set(on.slice(0, 14));
+}
+function defaultOn(node) { return defaultSet.has(node); }
+function renderMarkers() {
+  const lv = state.level, cands = candidates(), cnt = new Map(), tl = lv === "cell_type_fine" ? "fine" : lv;
+  for (const c of scopeClusters()) { const v = val(c, lv); cnt.set(v, (cnt.get(v) || 0) + 1); }
+  const childLv = lv === "broad" ? "cell_type" : lv === "cell_type" ? "cell_type_fine" : null;
+  $("mTitle").textContent = `${LVN[lv]} markers${lv !== "broad" && state.scope[lv] ? ` within ${short(state.scope[lv])}` : ""} (${cands.length})`;
+  if (!cands.length) { $("mlist").innerHTML = `<div class="empty">${lv === "cell_type_fine" && state.scope[lv] ? "This cell type has no fine types in the reference." : "No candidate labels here."}</div>`; return; }
+  $("mlist").innerHTML = cands.map((x, i) => {
+    const node = nodeName(lv, x), kids = childLv ? children(childLv, x) : [];
+    return `<div class="mnode"><input type="checkbox" data-n="${esc(x)}" ${isOn(x, i) ? "checked" : ""} aria-label="show ${esc(x)} in the dotplot">
+      <i class="sw" style="background:${labColor(x)}"></i>
+      <span class="nm">${esc(x)} <small>${cnt.get(x) ? `${cnt.get(x)} cluster${cnt.get(x) > 1 ? "s" : ""}` : ""}${T()[tl][x]?.n ? ` · ${T()[tl][x].n} ref cells` : ""}</small></span>
+      <div class="genes">${markerGenes(node)}</div>
+      ${kids.length ? `<details class="sub"><summary>${kids.length} ${childLv === "cell_type" ? "cell types" : "fine types"}</summary>${kids.map((k) => `<div class="mnode"><span class="nm">${esc(k)}</span><div class="genes">${markerGenes(nodeName(childLv, k), true)}</div></div>`).join("")}</details>` : ""}
+    </div>`;
+  }).join("") + `<p class="hint">Tags: R custom rule · C curated · c curated (low) · d DEG. Struck-through red = absent marker.</p>`;
+  $("mlist").querySelectorAll("input[type=checkbox]").forEach((cb) => cb.onchange = () => { state.on[state.level + "|" + cb.dataset.n] = cb.checked; renderDot(); });
+  bindGenes($("mlist"));
+}
+function bindGenes(root) {
+  root.querySelectorAll("[data-g]").forEach((el) => {
+    const g = el.dataset.g; if (!g) return;
+    el.onmouseenter = () => hoverGene(g);
+    el.onmouseleave = () => hoverGene("");
+    el.onclick = () => { state.pin = state.pin === g ? "" : g; document.querySelectorAll(".gene.pin").forEach((x) => x.classList.remove("pin")); if (state.pin) document.querySelectorAll(`.gene[data-g="${CSS.escape(g)}"]`).forEach((x) => x.classList.add("pin")); drawUMAPs(); };
+  });
+}
+let hoverT = null;
+function hoverGene(g) { clearTimeout(hoverT); hoverT = setTimeout(() => { if (state.hover === g) return; state.hover = g; drawUMAPs(); }, g ? 40 : 120); }
+
+// ---------------- dotplot
+function renderDot() {
+  const lv = state.level, cands = candidates(), on = cands.filter((x, i) => isOn(x, i));
+  const childLv = lv === "broad" ? "cell_type" : lv === "cell_type" ? "cell_type_fine" : null;
+  const k = state.topk, cols = [], seen = new Set();
+  // a gene may sit under several labels (e.g. present for one, absent for another); unique within a label
+  const add = (g, grp, kind, src) => { const key = grp + "|" + g; if (!GI.has(g) || seen.has(key)) return; seen.add(key); cols.push({ g, grp, kind, src }); };
+  const noMk = [], viaSub = [];
+  for (const x of on) {
+    const n0 = cols.length, m = D.markers[nodeName(lv, x)];
+    if (m) { m.p.slice(0, k).forEach(([g]) => add(g, x, "p")); if (state.showAbs) m.a.forEach(([g]) => add(g, x, "a")); }
+    const own = cols.length > n0;
+    // labels without markers of their own fall back to their sublabels' markers
+    if (childLv && (state.showSub || !own)) for (const kid of children(childLv, x)) { const mk = D.markers[nodeName(childLv, kid)]; if (mk) mk.p.slice(0, own ? 2 : 3).forEach(([g]) => add(g, x, "s", kid)); }
+    if (cols.length === n0) noMk.push(x); else if (!own) viaSub.push(x);
+  }
+  if (state.showDE) { const deSeen = new Set(cols.map((c) => c.g)); let n = 0; for (const id of state.sel) for (const g of byId.get(id).de.slice(0, 5)) { if (n < 20 && !deSeen.has(g) && GI.has(g)) { deSeen.add(g); add(g, "DE", "de"); n++; } } }
+  const rowsCl = scopeClusters();
+  $("dTitle").textContent = `Dotplot · ${rowsCl.length} clusters × ${cols.length} genes`;
+  $("dNote").textContent = [viaSub.length ? `sublabel markers used for ${viaSub.join(", ")} (no markers of their own)` : "", noMk.length ? `no markers at all: ${noMk.join(", ")}` : ""].filter(Boolean).join(" · ");
+  if (!cols.length || !rowsCl.length) { $("dot").innerHTML = `<div class="empty">${!rowsCl.length ? "No clusters in this scope yet. Assign their parent label first." : on.length ? `None of the ticked labels has markers in this class's gene panel (${esc(noMk.join(", "))}). Tick another label or turn on DE of selected clusters.` : "Tick at least one label in the marker panel."}</div>`; return; }
+  const ng = D.genes.length, gj = cols.map((c) => GI.get(c.g));
+  const lo = css("--dot-lo"), hi = css("--dot-hi");
+  const mix = (t) => `color-mix(in oklab, ${hi} ${Math.round(t * 100)}%, ${lo})`;
+  const runs = []; cols.forEach((c, j) => { if (runs.length && runs[runs.length - 1].grp === c.grp) runs[runs.length - 1].n++; else runs.push({ grp: c.grp, n: 1, j }); });
+  const sepAt = new Set(runs.slice(1).map((r) => r.j));
+  const sep = (j, tag) => sepAt.has(j) ? `<${tag} class="sep"></${tag}>` : "";
+  const grpRow = runs.map((r, i) => (i ? `<th class="sep"></th>` : "") + `<th class="grp" colspan="${r.n}" style="--gc:${r.grp === "DE" ? css("--muted") : labColor(r.grp)}" title="${esc(r.grp === "DE" ? "top DE genes of the selected clusters" : `markers of ${r.grp}`)}"><span>${esc(r.grp === "DE" ? "DE" : r.grp)}</span></th>`).join("");
+  const head = cols.map((c, j) => `${sep(j, "th")}<th class="g ${c.kind === "a" ? "ab" : c.kind === "de" || c.kind === "s" ? "de" : ""}" data-g="${esc(c.g)}" title="${esc(c.g)} · ${c.grp === "DE" ? "DE of the selected clusters" : `${c.kind === "a" ? "absent marker" : "marker"} of ${esc(c.grp)}${c.src ? ` (via ${esc(c.src)})` : ""}`} · hover: UMAP expression · click: pin"><div>${esc(c.g)}</div></th>`).join("");
+  const cell = (row, j, name) => {
+    const f = FRAC[row * ng + gj[j]] / 255, m = MEAN[row * ng + gj[j]] / 255;
+    if (f <= 0.005) return `${sep(j, "td")}<td class="c"></td>`;
+    const sz = Math.round(3 + Math.sqrt(f) * 14);
+    return `${sep(j, "td")}<td class="c"><span class="dotc" style="width:${sz}px;height:${sz}px;background:${mix(m)}" title="${esc(cols[j].g)} · ${esc(name)}: ${(f * 100).toFixed(0)}% detected, mean ${(m * D.gmax[gj[j]]).toFixed(2)}"></span></td>`;
+  };
+  const groups = new Map();
+  for (const c of rowsCl) { const v = dropped(c) ? "dropped" : val(c, lv); if (!groups.has(v)) groups.set(v, []); groups.get(v).push(c); }
+  const order = [...groups.keys()].sort((a, b) => (a === "" || a === "dropped") - (b === "" || b === "dropped") || cands.indexOf(a) - cands.indexOf(b) || a.localeCompare(b));
+  const span = cols.length + runs.length;
+  let body = "";
+  for (const v of order) {
+    const cs = groups.get(v);
+    body += `<tr class="gh" style="--gc:${v === "dropped" ? css("--drop") : labColor(v)}"><td colspan="${span}">${esc(v === "dropped" ? "dropped" : short(v))} · ${cs.length} cluster${cs.length > 1 ? "s" : ""}</td></tr>`;
+    for (const c of cs) {
+      const e = eff(c, lv), row = CL.indexOf(c);
+      body += `<tr class="cl ${state.sel.has(c.id) ? "sel" : ""}" data-id="${esc(c.id)}"><td class="rn" title="${esc(c.id)} · ${int(c.n)} cells · Phase 5: ${esc(c.p5.label)}">${esc(c.id)} <small>${int(c.n)}</small> <span class="lab ${e.seed ? "seed" : ""}">${esc(short(c.p5.label))}</span></td>${cols.map((_, j) => cell(row, j, c.id)).join("")}</tr>`;
+    }
+  }
+  if (state.showRef) {
+    let first = true;
+    for (const x of on) {
+      const ri = D.refs.findIndex((r) => r.node === nodeName(lv, x));
+      if (ri < 0) continue;
+      const row = CL.length + ri;
+      body += `<tr class="ref ${first ? "first" : ""}"><td class="rn" title="cells whose source label is ${esc(x)}, whole atlas">ref ${esc(x)} <small>${int(D.refs[ri].n)}</small></td>${cols.map((_, j) => cell(row, j, "ref " + x)).join("")}</tr>`;
+      first = false;
+    }
+  }
+  $("dot").innerHTML = `<table class="dot"><thead><tr><th class="rn"></th>${grpRow}</tr><tr><th class="rn"></th>${head}</tr></thead><tbody>${body}</tbody></table>`;
+  $("dot").querySelectorAll("tr.cl").forEach((tr) => tr.onclick = (e) => {
+    const id = tr.dataset.id;
+    if (e.shiftKey || e.metaKey || e.ctrlKey) state.sel.has(id) ? state.sel.delete(id) : state.sel.add(id);
+    else state.sel = state.sel.size === 1 && state.sel.has(id) ? new Set() : new Set([id]);
+    renderAll(true);
+  });
+  bindGenes($("dot"));
+}
+
+// ---------------- header
+function progress(lv) {
+  let done = 0, tot = 0;
+  for (const c of CL) {
+    if (dropped(c)) continue;
+    if (lv === "cell_type_fine") { const ct = val(c, "cell_type"); if (!ct || ct === NONE || !hasFine(ct)) continue; }
+    tot++; if (val(c, lv)) done++;
+  }
+  return [done, tot];
+}
+function renderHeader() {
+  $("groups").innerHTML = IDX.groups.map((g) => `<button class="chip" data-g="${esc(g.group)}" aria-pressed="${g.group === state.group}">${esc(g.group)} <span class="n">${g.n_clusters}</span></button>`).join("");
+  $("groups").querySelectorAll(".chip").forEach((b) => b.onclick = () => loadGroup(b.dataset.g));
+  if (!D) return;
+  $("steps").innerHTML = LV.map((l, i) => { const [d, t] = progress(l); return `<button class="step" data-l="${l}" aria-pressed="${state.level === l}">${i + 1}. ${LVN[l]} <span class="mini"><span style="width:${t ? d / t * 100 : 0}%"></span></span><b>${d}/${t}</b></button>`; }).join("");
+  $("steps").querySelectorAll(".step").forEach((b) => b.onclick = () => { state.level = b.dataset.l; state.sel.clear(); persist(); renderAll(); });
+  const lv = state.level;
+  $("scopeWrap").hidden = lv === "broad";
+  if (lv !== "broad") {
+    const opts = scopeOptions();
+    if (!opts.some((o) => o.o === state.scope[lv])) state.scope[lv] = opts.find((o) => o.n && o.fine)?.o || "";
+    $("scopeLabel").textContent = `Within ${LVN[PARENT[lv]].toLowerCase()}`;
+    $("scope").innerHTML = (opts.length ? "" : `<option value="">no ${LVN[PARENT[lv]].toLowerCase()} labels yet</option>`) + opts.map((o) => `<option value="${esc(o.o)}" ${o.o === state.scope[lv] ? "selected" : ""}>${esc(o.o === NONE ? "(no broad)" : o.o)} · ${o.n} clusters${o.fine ? "" : " · no fine types"}</option>`).join("");
+  }
+}
+function renderAll(keepMarkers) {
+  if (!D) return;
+  renderHeader(); buildColors(); computeDefaults();
+  renderAssign(); renderDetail(); if (!keepMarkers) renderMarkers(); renderDot(); drawUMAPs();
+}
+$("scope").onchange = (e) => { state.scope[state.level] = e.target.value; state.sel.clear(); persist(); renderAll(); };
+$("colorBy").onchange = (e) => { state.color = e.target.value; persist(); drawUMAPs(); };
+$("topk").onchange = (e) => { state.topk = +e.target.value; persist(); renderDot(); };
+for (const id of ["showAbs", "showSub", "showDE", "showRef"]) $(id).onchange = (e) => { state[id] = e.target.checked; persist(); renderDot(); };
+function syncControls() { $("colorBy").value = state.color; $("topk").value = String(state.topk); for (const id of ["showAbs", "showSub", "showDE", "showRef"]) $(id).checked = !!state[id]; }
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(drawUMAPs, 120); });
+const redraw = () => { if (D) renderAll(true); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !e.target.closest("input, textarea, select")) { state.sel.clear(); state.pin = ""; renderAll(true); } });
+
+// ---------------- loading
+// expression parts: gzip, then base64 text (artifacts serve no raw binary)
+async function fetchBin(name) {
+  const r = await fetch("data/" + name);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const gz = b64(await r.text(), Uint8Array);
+  return await new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+}
+let loadToken = 0;
+async function loadGroup(g) {
+  const meta = IDX.groups.find((x) => x.group === g) || IDX.groups[0], tok = ++loadToken;
+  state.group = meta.group; state.sel.clear(); state.pin = ""; state.hover = ""; persist();
+  D = null; CELLS = null; exprParts = null; renderHeader();
+  $("dot").innerHTML = `<div class="empty">Loading ${esc(meta.group)}…</div>`; $("mlist").innerHTML = ""; $("assign").innerHTML = "";
+  let d;
+  try { d = await (await fetch(meta.file)).json(); } catch (e) { $("dot").innerHTML = `<div class="empty">The data for ${esc(meta.group)} did not load. Reload the page.</div>`; return; }
+  if (tok !== loadToken) return;
+  D = d; CL = D.clusters; byId = new Map(CL.map((c) => [c.id, c])); GI = new Map(D.genes.map((g, j) => [g, j]));
+  MEAN = b64(D.mean, Uint8Array); FRAC = b64(D.frac, Uint8Array);
+  CELLS = { con: b64(D.cells.con, Uint16Array), har: b64(D.cells.har, Uint16Array), cl: b64(D.cells.cl, Uint16Array), ds: b64(D.cells.ds, Uint8Array), st: b64(D.cells.st, Uint8Array) };
+  CELLS.n = CELLS.cl.length;
+  $("nShown").textContent = `${int(CELLS.n)} of ${int(D.n_cells)} cells shown`;
+  const all = [];
+  for (const [lv, key] of [["broad", "broad"], ["cell_type", "cell_type"], ["cell_type_fine", "fine"]]) for (const n of Object.keys(D.tree[key])) all.push(`${lv}:${n}`);
+  $("allNodes")?.remove(); document.body.insertAdjacentHTML("beforeend", `<datalist id="allNodes">${all.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>`);
+  renderAll();
+  try {
+    const parts = await Promise.all(D.expr.parts.map(fetchBin));
+    if (tok !== loadToken) return;
+    exprParts = parts; drawUMAPs();
+  } catch (e) { setSave("Gene expression did not load; the dotplot still works", true); }
+}
+
+// ---------------- local fallback (outside claude.ai): same db shape, backed by localStorage
+const LKEY = "p5b-labels";
+const readLocal = () => JSON.parse(localStorage.getItem(LKEY) || "{}");
+const localDB = { collection: () => ({
+  doc: (k) => ({ set: async (b) => { const all = readLocal(); all[k] = b; localStorage.setItem(LKEY, JSON.stringify(all)); } }),
+  onSnapshot: (cb) => {
+    let all = {}; try { all = readLocal(); } catch (e) { setSave("Couldn't read labels saved in this browser", true); }
+    cb({ docs: Object.entries(all).map(([id, v]) => ({ id, data: () => v })) });
+  },
+}) };
+$("exportBtn").onclick = async () => {
+  const filename = `phase5b_labels_${new Date().toISOString().slice(0, 10)}.json`, data = JSON.stringify(labels, null, 1);
+  const dl = window.claude && window.claude.use ? await claude.use("downloads") : null;
+  if (dl) {
+    try { await dl.save({ filename, data }); }
+    catch (e) { if (e && e.code !== "declined") setSave("Export failed; try again", true); }
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+  a.download = filename;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+// import an exported file: per cluster, keep whichever edit is newer (by `at`)
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f || !db || !canWrite) return;
+  let inc;
+  try { inc = JSON.parse(await f.text()); } catch (err) { setSave("Import failed: not a JSON file", true); return; }
+  const ok = ([k, v]) => /^c_[A-Za-z0-9_-]+$/.test(k) && v && typeof v === "object" && typeof v.cluster_id === "string" && docKey(v.cluster_id) === k;
+  if (!inc || typeof inc !== "object" || Array.isArray(inc)) { setSave("Import failed: not an exported labels file", true); return; }
+  const all = Object.entries(inc), valid = all.filter(ok);
+  const todo = valid.filter(([k, v]) => !labels[k] || String(v.at || "") > String(labels[k].at || ""));
+  $("importBtn").disabled = true;
+  let done = 0, failed = 0;
+  for (const [k, v] of todo) {
+    setSave(`Importing ${done + 1} of ${todo.length}…`);
+    for (let tries = 0; ; tries++) {
+      try { await db.collection("labels").doc(k).set(v); labels[k] = v; done++; break; }
+      catch (err) {
+        if (err && err.code === "resource_exhausted" && tries < 5) { await new Promise((r) => setTimeout(r, 1000 * (tries + 1))); continue; }
+        failed++; break;
+      }
+    }
+  }
+  $("importBtn").disabled = false;
+  const skipped = valid.length - todo.length, bad = all.length - valid.length;
+  setSave(`Imported ${done} label${done === 1 ? "" : "s"}` + (skipped ? ` · ${skipped} kept (current one is newer or same)` : "") + (bad ? ` · ${bad} unreadable` : "") + (failed ? ` · ${failed} failed, import again to retry` : ""), !!(failed || bad));
+  if (D) renderAll(true);
+};
+
+async function start() {
+  syncControls();
+  try { IDX = await (await fetch("groups.json")).json(); }
+  catch (e) { $("dot").innerHTML = `<div class="empty">The class list did not load. Reload the page.</div>`; return; }
+  renderHeader();
+  loadGroup(IDX.groups.some((g) => g.group === state.group) ? state.group : IDX.groups[0].group);
+  let dbns = localDB, user = null;
+  if (window.claude && window.claude.use) [dbns, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+  else banner("Labels are saved in this browser only. Use Export labels to keep a copy as a file.");
+  if (!dbns) { banner("Labels can't be saved in this view. Sign in on claude.ai to record them; you can still browse."); return; }
+  db = dbns;
+  if (user) { try { me = await user.id(); } catch (e) {} let w = null; try { w = await user.can("data.write"); } catch (e) {} canWrite = w !== false; } else canWrite = true;
+  if (!canWrite) banner("You can browse, but only people with edit access record labels.");
+  $("importBtn").disabled = !canWrite;
+  db.collection("labels").onSnapshot((snap) => {
+    labels = {}; for (const d of snap.docs) labels[d.id] = d.data();
+    if (!D) return;
+    if (document.activeElement && document.activeElement.closest("#detail textarea, #other")) { renderHeader(); renderDot(); drawUMAPs(); return; }
+    renderAll(true);
+  }, () => setSave("Live updates stopped; reload to see others' labels", true));
+  if (D) renderAll();
+}
+start();
+</script>
+
+</body></html>
